@@ -1,78 +1,84 @@
 # EV Charging Concept Drift Thesis
 
-**Working Title:** *Concept-Drift-Aware Machine Learning for Day-Ahead EV Charging Energy Demand and High-Demand Risk Prediction Across ACN Sites*
+**Working Title:** *Concept-Drift-Aware Machine Learning for Day-Ahead EV Charging Energy Demand and High-Demand Risk Prediction in the Palo Alto Municipal Charging Network*
 
 ## Project Overview
 
-This project will develop a concept-drift-aware machine-learning approach for predicting next-day EV charging energy demand and high-demand risk. Historical charging sessions from the **Caltech** and **JPL** sites of [ACN-Data](https://ev.caltech.edu/dataset) will be used.
+This project will develop a concept-drift-aware machine-learning approach for predicting next-day EV charging energy demand and high-demand risk. Historical charging sessions from the [City of Palo Alto’s official EV-charging dataset](https://data.paloalto.gov/datasets/194693/electric-vehicle-charging-station-usage-july-2011-dec-2020/) will be used.
+
+The dataset contains **259,415 charging sessions** recorded from **July 29, 2011 to December 31, 2020**, covering **47 station names across 20 physical addresses**. Valid charging sessions will be aggregated by date to create one city-wide daily time series.
+
+The forecasting target is the **total energy, in kWh, expected to be delivered across the Palo Alto municipal charging network on the following day**. The study evaluates historical forecasting and model-maintenance performance and does not estimate present-day charging demand.
 
 This README will be updated as the project progresses.
 
 ## Planned Workflow
 
-1. Data gathering
-2. Data validation and preprocessing
-3. Daily aggregation and feature engineering
-4. Seasonal-naive, Random Forest, and XGBoost modeling
-5. Concept-drift detection and model retraining
-6. Model evaluation and comparison
+1. Dataset acquisition and validation
+2. Session-level data cleaning
+3. City-wide daily energy aggregation
+4. Time-series feature engineering
+5. Seasonal-naive, Random Forest, and XGBoost modeling
+6. High-demand risk prediction
+7. Concept-drift detection using ADWIN
+8. Comparison of frozen, monthly-retrained, and ADWIN-retrained models
+9. Chronological model evaluation and comparison
 
 ## Current Stage: Data Gathering
 
-The `download_acndata.py` script retrieves all available session-level records from Caltech and JPL through the ACN-Data API.
+The full session-level dataset will be downloaded from the City of Palo Alto Open Data portal. No API token is required.
 
 ### Prerequisites
 
-- Python 3.10 or newer
-- Internet connection
-- `download_acndata.py`
-- ACN API token from the group Discord
-- Python `requests` package
+* Internet connection
+* Web browser
+* Sufficient storage for the full CSV file
+* Python 3.10 or newer for the succeeding stages
 
-### Instructions
+### Download Instructions
 
-1. Place `download_acndata.py` inside the project folder.
-2. Open PowerShell or Command Prompt in that folder.
-3. Install the required package:
+1. Open the [official Palo Alto dataset page](https://data.paloalto.gov/datasets/194693/electric-vehicle-charging-station-usage-july-2011-dec-2020/).
 
-   ```powershell
-   py -m pip install requests
-   ```
+2. Open the dataset’s **Information** section.
 
-4. Run the downloader:
+3. Locate **Data Collected From**.
 
-   ```powershell
-   py download_acndata.py
-   ```
-
-5. Copy the API token from the group Discord, paste it when requested, and press **Enter**.
+4. Download the source file named:
 
    ```text
-   Enter your ACN API token (input hidden):
+   ChargePoint Data CY20Q4.csv
    ```
 
-   Nothing will appear while pasting the token. This is normal.
+5. Save the file inside the project’s `data/raw/` folder.
 
-6. Keep the terminal open until the following message appears:
+6. Confirm that the downloaded file contains **259,415 charging-session rows**.
 
-   ```text
-   All requested sites downloaded and passed the completeness check.
-   ```
+Do not use the portal’s ordinary export option because it may export only 10,000 rows. Download the complete source CSV through the **Data Collected From** section.
 
 ### Project Files
 
 ```text
 EV-Thesis/
 ├── README.md
-├── download_acndata.py
-└── acndata_download/
-    ├── acndata_caltech_sessions.jsonl
-    ├── acndata_jpl_sessions.jsonl
-    └── acndata_download_summary_YYYYMMDDTHHMMSSZ.json
+└── data/
+    └── raw/
+        └── ChargePoint Data CY20Q4.csv
 ```
 
-Each line in a `.jsonl` file represents one charging session. The raw files must remain unchanged, and the download summary must be kept as the data-gathering record. Do not place the API token inside the script or README.
+Each CSV row represents one charging session. Important fields include the charging start and end times, delivered energy, station name, and physical address.
+
+The raw CSV must remain unchanged. Cleaned, aggregated, and feature-engineered datasets must be saved separately so that the original source data remains available for verification.
+
+## Forecasting Scope
+
+The 47 station names will not initially be modeled as separate forecasting targets. Instead, their delivered energy will be summed by date to produce the total daily demand of the Palo Alto municipal charging network.
+
+Therefore, each prediction will answer:
+
+> How much total EV-charging energy will the Palo Alto municipal charging network require tomorrow?
+
+Station additions and changes in network size will be examined when interpreting detected drift because changes in city-wide demand may result from EV adoption, charging behaviour, exceptional events, or expansion of the charging network.
 
 ## Next Stage
 
-The next update will document data validation, cleaning, and daily site-level aggregation.
+The next update will document session-level data validation, cleaning, duplicate handling, date conversion, and city-wide daily energy aggregation.
